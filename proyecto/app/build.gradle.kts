@@ -87,6 +87,9 @@ dependencies {
     implementation ("androidx.navigation:navigation-ui-ktx:2.5.3")
     implementation ("androidx.preference:preference-ktx:1.1.1")
 
+    //Material design
+    implementation("com.google.android.material:material:1.9.0")
+
 
 }
 
