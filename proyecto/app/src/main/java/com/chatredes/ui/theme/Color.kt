@@ -1,4 +1,4 @@
-package com.chat.ui.theme
+package com.chatredes.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

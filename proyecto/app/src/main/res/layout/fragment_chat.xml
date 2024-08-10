@@ -1,14 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.pantallas.fragmentChat">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.pantallas.chatFragment"
+    android:padding="20dp">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:id="@+id/recyclerChat"
+        tools:listitem="@layout/chat_item"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        />
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/IL_mensaje"
+        android:layout_toStartOf="@+id/cardView_btn_send"
+        android:layout_marginRight="10dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="10dp"
+        app:boxStrokeColor="@color/md_theme_onPrimary"
+        app:boxStrokeWidth="7dp"
+        android:textColorHint="@color/md_theme_onPrimary"
+        android:textColor="@color/md_theme_onPrimary"
+        android:layout_marginBottom="10dp"
+        >
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/ET_mensaje"
+            android:background="@color/md_theme_primary"
+            android:hint="Escribe un mensaje"
+            android:inputType="text"
+            />
+    </com.google.android.material.textfield.TextInputLayout>
 
-</FrameLayout>
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/cardView_btn_send"
+        android:layout_alignParentEnd="true"
+        android:layout_alignBottom="@+id/IL_mensaje"
+        app:cardCornerRadius="50dp"
+        >
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/IB_enviar"
+            android:layout_alignParentEnd="true"
+            android:layout_alignBottom="@+id/IL_mensaje"
+            android:src="@drawable/send"
+            android:background="@color/md_theme_primary"
+            android:contentDescription="Enviar mensaje"
+            android:padding="15dp"
+            />
+    </androidx.cardview.widget.CardView>
+
+
+
+</RelativeLayout>
