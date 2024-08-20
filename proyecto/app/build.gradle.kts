@@ -108,4 +108,11 @@ dependencies {
 
     implementation ("me.grantland:autofittextview:0.2.+")
 
+    // Halcyon
+    implementation ("org.igniterealtime.smack:smack-android-extensions:4.4.0")
+    implementation ("org.igniterealtime.smack:smack-tcp:4.4.0")
+    implementation ("org.igniterealtime.smack:smack-im:4.4.0")
+
+
+
 }
