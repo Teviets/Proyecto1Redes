@@ -22,4 +22,8 @@ class UserUseCase @Inject constructor(
     fun logout() {
         repo.disconnect()
     }
+
+    fun changeDisponibility(status: String) {
+        repo.changeDisponibility(status)
+    }
 }

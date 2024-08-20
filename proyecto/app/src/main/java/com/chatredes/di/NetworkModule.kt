@@ -5,9 +5,10 @@ import com.chatredes.data.constantes.Constantes
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 
 @Module
-@InstallIn()
+@InstallIn(SingletonComponent::class)
 class NetworkModule {
 
     @Provides

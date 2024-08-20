@@ -29,10 +29,6 @@ class XMPPClient (
     private var config: XMPPTCPConnectionConfiguration? = null
     private val receivedMessages = mutableListOf<Message>()
 
-    init {
-        setupMessageListener()
-    }
-
     fun connect( username: String, password: String) {
 
         config = XMPPTCPConnectionConfiguration.builder()
@@ -62,10 +58,10 @@ class XMPPClient (
 
 
 
-    fun changeStatus(status: String) {
-        println("Changing status to: $status")
-        connection!!.sendStanza(connection!!.stanzaFactory.buildPresenceStanza().setStatus(status).build())
-        println("Status changed")
+    fun changeDisponibility(status: String) {
+        val presence = Presence(Presence.Type.available)
+        presence.status = status
+        connection!!.sendStanza(presence)
     }
 
     fun disconnect() {

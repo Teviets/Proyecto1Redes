@@ -13,8 +13,8 @@ android {
         applicationId = "com.chatredes"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -109,9 +109,17 @@ dependencies {
     implementation ("me.grantland:autofittextview:0.2.+")
 
     // Halcyon
-    implementation ("org.igniterealtime.smack:smack-android-extensions:4.4.0")
-    implementation ("org.igniterealtime.smack:smack-tcp:4.4.0")
-    implementation ("org.igniterealtime.smack:smack-im:4.4.0")
+    implementation("org.igniterealtime.smack:smack-android-extensions:4.4.0") {
+        exclude(group = "xpp3", module = "xpp3_min")
+    }
+    implementation("org.igniterealtime.smack:smack-tcp:4.4.0") {
+        exclude(group = "xpp3", module = "xpp3_min")
+    }
+    implementation("org.igniterealtime.smack:smack-im:4.4.0") {
+        exclude(group = "xpp3", module = "xpp3_min")
+    }
+
+
 
 
 

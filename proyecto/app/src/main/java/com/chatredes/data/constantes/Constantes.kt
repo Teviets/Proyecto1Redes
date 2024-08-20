@@ -1,6 +1,6 @@
 package com.chatredes.data.constantes
 
-class Constantes {
+object Constantes {
 
     val server = "alumchat.lol"
 }
