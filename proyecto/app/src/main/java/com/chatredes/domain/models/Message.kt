@@ -18,3 +18,12 @@ fun Message.toSmackMessage(): org.jivesoftware.smack.packet.Message {
     smackMessage.stanzaId = this.timestamp.toString()
     return smackMessage
 }
+
+fun org.jivesoftware.smack.packet.Message.toMessage(): Message {
+    return Message(
+        sender = this.from.toString(),
+        receiver = this.to.toString(),
+        message = this.body,
+        timestamp = this.stanzaId.toLong()
+    )
+}

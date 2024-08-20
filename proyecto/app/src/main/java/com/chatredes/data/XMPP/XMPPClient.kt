@@ -3,6 +3,7 @@ package com.chatredes.data.XMPP
 import com.chatredes.domain.models.Contact
 import com.chatredes.domain.models.Message
 import com.chatredes.domain.models.toContact
+import com.chatredes.domain.models.toMessage
 import org.jivesoftware.smack.ConnectionConfiguration
 import org.jivesoftware.smack.SmackConfiguration
 import org.jivesoftware.smack.SmackException
@@ -20,19 +21,21 @@ import org.jxmpp.jid.impl.JidCreate
 import org.jxmpp.jid.parts.Localpart
 
 
-class XMPPClient (server: String, username: String, password: String) {
+class XMPPClient (
+    private val server: String
+) {
 
-    private var connection: XMPPTCPConnection = XMPPTCPConnection(username,password,server)
+    private var connection: XMPPTCPConnection? = null
+    private var config: XMPPTCPConnectionConfiguration? = null
     private val receivedMessages = mutableListOf<Message>()
 
     init {
         setupMessageListener()
     }
 
-    fun connect(server: String, username: String, password: String) {
-        println("Connecting to XMPP server: $server")
+    fun connect( username: String, password: String) {
 
-        val config = XMPPTCPConnectionConfiguration.builder()
+        config = XMPPTCPConnectionConfiguration.builder()
             .setXmppDomain(server)
             .setHost(server)
             .setPort(5222)
@@ -41,35 +44,47 @@ class XMPPClient (server: String, username: String, password: String) {
             .setSendPresence(true)
             .build()
 
-        connection.connect().login()
-
         println("Connected to XMPP server")
 
     }
 
+    fun login(username: String, password: String) {
+        try {
+            connection = XMPPTCPConnection(config)
+            connection!!.connect()
+            connection!!.login(username, password)
+            println("Logged in as: $username")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println("Failed to login: ${e.message}")
+        }
+    }
+
+
+
     fun changeStatus(status: String) {
         println("Changing status to: $status")
-        connection.sendStanza(connection.stanzaFactory.buildPresenceStanza().setStatus(status).build())
+        connection!!.sendStanza(connection!!.stanzaFactory.buildPresenceStanza().setStatus(status).build())
         println("Status changed")
     }
 
     fun disconnect() {
         println("Disconnecting from XMPP server")
-        connection.disconnect()
+        connection!!.disconnect()
         println("Disconnected from XMPP server")
     }
 
     fun sendMessage(message: Message) {
         println("Sending message: $message")
 
-        val message = connection.stanzaFactory
+        val message = connection!!.stanzaFactory
             .buildMessageStanza()
             .to(message.receiver)
             .from(message.sender)
             .setBody(message.message)
             .build()
 
-        connection.sendStanza(message)
+        connection!!.sendStanza(message)
 
         println("Message sent")
     }
@@ -147,7 +162,7 @@ class XMPPClient (server: String, username: String, password: String) {
 
         chatManager.addIncomingListener { from, message, chat ->
             println("Received message from: $from - Message: ${message.body}")
-            receivedMessages.add(message)
+            receivedMessages.add(message.toMessage())
         }
     }
 
