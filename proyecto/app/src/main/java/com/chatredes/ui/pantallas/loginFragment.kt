@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -38,8 +39,13 @@ class loginFragment : Fragment() {
     private fun setObservers() {
         viewModel.isLogged.observe(viewLifecycleOwner, Observer{
             if (it) {
-                findNavController().navigate(R.id.action_loginFragment_to_chatFragment)
+                Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
+            }else{
+                Toast.makeText(context, "Inicio de sesión fallido", Toast.LENGTH_SHORT).show()
             }
+        })
+        viewModel.message.observe(viewLifecycleOwner, Observer{
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         })
     }
 

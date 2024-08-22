@@ -8,7 +8,12 @@ class UserUseCase @Inject constructor(
 )  {
 
     fun login(username: String, password: String): Boolean {
-        return repo.login(username, password)
+        try {
+            return repo.login(username, password)
+        }catch (e: Exception){
+            throw e
+        }
+
     }
 
     fun registerAccount(username: String, password: String) {

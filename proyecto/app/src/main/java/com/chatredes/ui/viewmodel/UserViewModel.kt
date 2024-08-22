@@ -19,10 +19,24 @@ class UserViewModel @Inject constructor(
     private val _isLogged = MutableLiveData<Boolean>()
     val isLogged get() = _isLogged
 
+    private val _message = MutableLiveData<String>()
+    val message get() = _message
+
 
     fun login(username: String, password: String) {
         viewModelScope.launch {
-            _isLogged.value = userUseCase.login(username, password)
+            try {
+                _isLogged.value = userUseCase.login(username, password)
+                if (_isLogged.value == true){
+                    _message.value = "Inicio de sesión exitoso"
+                }else{
+                    _message.value = "Inicio de sesión fallido"
+                }
+            }catch (e: Exception){
+                _isLogged.value = false
+                _message.value = e.message
+            }
+
         }
 
     }

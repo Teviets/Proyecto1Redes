@@ -52,8 +52,7 @@ class XMPPClient (
             println("Logged in as: $username")
             true
         } catch (e: Exception) {
-            e.printStackTrace()
-            println("Failed to login: ${e.message}")
+            throw e
             false
         }
     }
