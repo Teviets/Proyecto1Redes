@@ -37,6 +37,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+        kapt.includeCompileClasspath = true
     }
     buildFeatures {
         compose = true

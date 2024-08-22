@@ -44,15 +44,17 @@ class XMPPClient (
 
     }
 
-    fun login(username: String, password: String) {
-        try {
+    fun login(username: String, password: String) : Boolean{
+        return try {
             connection = XMPPTCPConnection(config)
             connection!!.connect()
             connection!!.login(username, password)
             println("Logged in as: $username")
+            true
         } catch (e: Exception) {
             e.printStackTrace()
             println("Failed to login: ${e.message}")
+            false
         }
     }
 

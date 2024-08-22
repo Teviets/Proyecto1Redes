@@ -7,8 +7,8 @@ class UserUseCase @Inject constructor(
     private val repo: XMPPClient
 )  {
 
-    fun login(username: String, password: String) {
-        repo.login(username, password)
+    fun login(username: String, password: String): Boolean {
+        return repo.login(username, password)
     }
 
     fun registerAccount(username: String, password: String) {
