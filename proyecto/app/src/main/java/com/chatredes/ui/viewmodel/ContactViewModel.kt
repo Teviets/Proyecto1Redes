@@ -1,6 +1,7 @@
 package com.chatredes.ui.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -41,13 +42,14 @@ class ContactViewModel @Inject constructor(
     }
 
 
-    fun addContact(contact: String) {
+    fun addContact(contact: String, name: String) {
         _status.value = StatusApp.Loading
         viewModelScope.launch {
             try {
-                contactsUseCase.addContact(contact)
+                contactsUseCase.addContact(contact, name)
                 _status.value = StatusApp.Success
             }catch (e: Exception){
+                Log.e("Error de add contact", e.toString())
                 _status.value = StatusApp.Error("Error al agregar contacto")
             }
         }

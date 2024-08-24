@@ -7,7 +7,6 @@ import com.chatredes.domain.models.toMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jivesoftware.smack.ConnectionConfiguration
-import org.jivesoftware.smack.SmackConfiguration
 import org.jivesoftware.smack.SmackException
 import org.jivesoftware.smack.XMPPConnection
 import org.jivesoftware.smack.chat2.ChatManager
@@ -15,46 +14,55 @@ import org.jivesoftware.smack.packet.Presence
 import org.jivesoftware.smack.tcp.XMPPTCPConnection
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration
 import org.jivesoftware.smackx.iqregister.AccountManager
-import org.jivesoftware.smackx.iqregister.packet.Registration
-import org.jivesoftware.smackx.iqregister.packet.Registration.Feature
 import org.jivesoftware.smack.roster.Roster
-import org.jivesoftware.smack.roster.RosterEntry
 import org.jxmpp.jid.impl.JidCreate
 import org.jxmpp.jid.parts.Localpart
 
-
-class XMPPClient (
-    private val server: String
-) {
+class XMPPClient private constructor(private val server: String) {
 
     private var connection: XMPPTCPConnection? = null
     private var config: XMPPTCPConnectionConfiguration? = null
     private val receivedMessages = mutableListOf<Message>()
 
-    fun connect() {
+    companion object {
+        @Volatile
+        private var instance: XMPPClient? = null
 
-        config = XMPPTCPConnectionConfiguration.builder()
-            .setXmppDomain(server)
-            .setHost(server)
-            .setSecurityMode(ConnectionConfiguration.SecurityMode.disabled)
-            .setCompressionEnabled(false)
-            .setSendPresence(true)
-            .build()
-
-        println("Connected to XMPP server")
-
+        fun getInstance(server: String): XMPPClient {
+            return instance ?: synchronized(this) {
+                instance ?: XMPPClient(server).also { instance = it }
+            }
+        }
     }
 
-    suspend fun login(username: String, password: String) : Boolean{
-        try {
-            return withContext(Dispatchers.IO){
-                connection = XMPPTCPConnection(config)
+    fun connect() {
+        if (config == null) {
+            config = XMPPTCPConnectionConfiguration.builder()
+                .setXmppDomain(server)
+                .setHost(server)
+                .setSecurityMode(ConnectionConfiguration.SecurityMode.disabled)
+                .setCompressionEnabled(false)
+                .setSendPresence(true)
+                .build()
+        }
+
+        println("Configured to connect to XMPP server")
+    }
+
+    suspend fun login(username: String, password: String): Boolean {
+        return try {
+            withContext(Dispatchers.IO) {
+                if (connection == null) {
+                    connection = XMPPTCPConnection(config)
+                }
+
                 connection!!.connect()
 
                 if (connection!!.isConnected) {
                     println("Connection to server successful")
                     connection!!.login(username, password)
                     println("Logged in as: $username")
+                    setupMessageListener()
                     true
                 } else {
                     println("Failed to connect to server")
@@ -62,40 +70,36 @@ class XMPPClient (
                 }
             }
         } catch (e: Exception) {
-            println("El error aqui apareceeeee")
             e.printStackTrace()
-            return false
+            false
         }
-
     }
-
-
 
     fun changeDisponibility(status: String) {
         val presence = Presence(Presence.Type.available)
         presence.status = status
-        connection!!.sendStanza(presence)
+        connection?.sendStanza(presence)
     }
 
     fun disconnect() {
         println("Disconnecting from XMPP server")
-        connection!!.disconnect()
+        connection?.disconnect()
+        connection = null
         println("Disconnected from XMPP server")
     }
 
     fun sendMessage(message: Message) {
-        println("Sending message: $message")
+        val stanza = connection?.stanzaFactory
+            ?.buildMessageStanza()
+            ?.to(message.receiver)
+            ?.from(message.sender)
+            ?.setBody(message.message)
+            ?.build()
 
-        val message = connection!!.stanzaFactory
-            .buildMessageStanza()
-            .to(message.receiver)
-            .from(message.sender)
-            .setBody(message.message)
-            .build()
-
-        connection!!.sendStanza(message)
-
-        println("Message sent")
+        stanza?.let {
+            connection?.sendStanza(it)
+            println("Message sent: $message")
+        }
     }
 
     fun deleteAccount() {
@@ -111,19 +115,15 @@ class XMPPClient (
 
     fun registerAccount(username: String, password: String) {
         try {
-            // Configurar el AccountManager con la conexión
             val accountManager = AccountManager.getInstance(connection)
             accountManager.sensitiveOperationOverInsecureConnection(true)
 
-            // Crear un mapa con los atributos de registro
-            val attributes = HashMap<String, String>()
-            attributes["username"] = username
-            attributes["password"] = password
+            val attributes = HashMap<String, String>().apply {
+                put("username", username)
+                put("password", password)
+            }
 
-            // Crear el Localpart para el nombre de usuario
             val localpart = Localpart.from(username)
-
-            // Registrar la cuenta en el servidor
             accountManager.createAccount(localpart, password, attributes)
             println("Account registered successfully: $username")
 
@@ -133,16 +133,14 @@ class XMPPClient (
         }
     }
 
-    fun addContact(jid: String) {
+    fun addContact(jid: String, name: String) {
         try {
             val roster = Roster.getInstanceFor(connection)
             roster.subscriptionMode = Roster.SubscriptionMode.accept_all
 
-            // Verificar si el contacto ya existe
             val entry = roster.getEntry(JidCreate.bareFrom(jid))
             if (entry == null) {
-                // Agregar contacto al roster con el mismo JID como nombre
-                roster.createEntry(JidCreate.bareFrom(jid), jid, null)
+                roster.createEntry(JidCreate.bareFrom(jid), name, null)
                 println("Contact added: $jid")
             } else {
                 println("Contact already exists: $jid")
@@ -157,7 +155,7 @@ class XMPPClient (
         val roster = Roster.getInstanceFor(connection)
         val contacts = mutableListOf<Contact>()
 
-        for (entry in roster.entries) {
+        roster.entries.forEach { entry ->
             val presence: Presence = roster.getPresence(entry.jid)
             val status = presence.status ?: "Unavailable"
             contacts.add(entry.toContact(status))
@@ -168,7 +166,6 @@ class XMPPClient (
 
     private fun setupMessageListener() {
         val chatManager = ChatManager.getInstanceFor(connection)
-
         chatManager.addIncomingListener { from, message, chat ->
             println("Received message from: $from - Message: ${message.body}")
             receivedMessages.add(message.toMessage())
@@ -178,6 +175,4 @@ class XMPPClient (
     fun getMessages(): List<Message> {
         return receivedMessages.toList()
     }
-
-
 }

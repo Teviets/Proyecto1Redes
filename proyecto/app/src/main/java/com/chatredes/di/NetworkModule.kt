@@ -13,6 +13,6 @@ class NetworkModule {
 
     @Provides
     fun provideXMPPClient(): XMPPClient {
-        return XMPPClient(Constantes.server)
+        return XMPPClient.getInstance(Constantes.server)
     }
 }

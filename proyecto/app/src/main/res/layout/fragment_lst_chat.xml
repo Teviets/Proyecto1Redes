@@ -46,7 +46,7 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <ImageButton
-            android:id="@+id/IB_enviar"
+            android:id="@+id/IB_add"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignBottom="@+id/IL_mensaje"

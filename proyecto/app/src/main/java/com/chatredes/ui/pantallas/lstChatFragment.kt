@@ -13,6 +13,7 @@ import com.chatredes.R
 import com.chatredes.databinding.FragmentLstChatBinding
 import com.chatredes.domain.models.Contact
 import com.chatredes.ui.adapter.ContactAdapter
+import com.chatredes.ui.dialogs.AddContactDialog
 import com.chatredes.ui.viewmodel.ContactViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -23,7 +24,7 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
 
     private lateinit var binding: FragmentLstChatBinding
 
-    private lateinit var contacts : List<Contact>
+    private var contacts : List<Contact> = emptyList()
 
     private lateinit var adapter: ContactAdapter
 
@@ -34,27 +35,49 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
         binding = FragmentLstChatBinding.inflate(inflater, container, false)
 
         setObservers()
+        setListeners()
         viewModel.getContacts()
         // Inflate the layout for this fragment
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setObservers()
+        setListeners()
+        viewModel.getContacts()
+    }
+
+    private fun setListeners() {
+        binding.IBAdd.setOnClickListener {
+            showAddContactDialog()
+        }
+    }
+
+    private fun showAddContactDialog(){
+        val dialog = AddContactDialog(viewModel)
+        dialog.show(childFragmentManager, "AddContactDialog")
+
+    }
+
     private fun setObservers() {
         viewModel.contacts.observe(viewLifecycleOwner, Observer{
             contacts = it
-
-            // setUpRecyclerView()
+            setUpRecyclerView()
         })
     }
 
     private fun setUpRecyclerView() {
-        adapter = ContactAdapter(contacts, this)
-        binding.apply {
-            recyclerChat.layoutManager = LinearLayoutManager(requireContext())
-            recyclerChat.setHasFixedSize(true)
-            recyclerChat.adapter = adapter
+        if(!this::adapter.isInitialized){
+            adapter = ContactAdapter(contacts, this)
+            binding.apply {
+                recyclerChat.layoutManager = LinearLayoutManager(requireContext())
+                recyclerChat.setHasFixedSize(true)
+                recyclerChat.adapter = adapter
+            }
+        }else{
+            adapter.notifyDataSetChanged()
         }
-        adapter.notifyDataSetChanged()
     }
 
     override fun onContactClick(contact: Contact) {

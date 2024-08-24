@@ -18,9 +18,9 @@ class ContactsUseCase @Inject constructor(
 
     }
 
-    suspend fun addContact(contact: String) {
+    suspend fun addContact(contact: String, name: String) {
         try{
-            repo.addContact(contact)
+            repo.addContact(contact, name)
         }catch (e: Exception){
             throw e
         }
