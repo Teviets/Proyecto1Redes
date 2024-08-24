@@ -7,7 +7,11 @@ class UserUseCase @Inject constructor(
     private val repo: XMPPClient
 )  {
 
-    fun login(username: String, password: String): Boolean {
+
+    suspend fun connect() {
+        repo.connect()
+    }
+    suspend fun login(username: String, password: String): Boolean {
         try {
             return repo.login(username, password)
         }catch (e: Exception){

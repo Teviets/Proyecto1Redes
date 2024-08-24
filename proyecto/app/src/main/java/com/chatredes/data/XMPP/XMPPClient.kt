@@ -4,6 +4,8 @@ import com.chatredes.domain.models.Contact
 import com.chatredes.domain.models.Message
 import com.chatredes.domain.models.toContact
 import com.chatredes.domain.models.toMessage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jivesoftware.smack.ConnectionConfiguration
 import org.jivesoftware.smack.SmackConfiguration
 import org.jivesoftware.smack.SmackException
@@ -29,12 +31,11 @@ class XMPPClient (
     private var config: XMPPTCPConnectionConfiguration? = null
     private val receivedMessages = mutableListOf<Message>()
 
-    fun connect( username: String, password: String) {
+    fun connect() {
 
         config = XMPPTCPConnectionConfiguration.builder()
             .setXmppDomain(server)
             .setHost(server)
-            .setPort(5222)
             .setSecurityMode(ConnectionConfiguration.SecurityMode.disabled)
             .setCompressionEnabled(false)
             .setSendPresence(true)
@@ -44,17 +45,28 @@ class XMPPClient (
 
     }
 
-    fun login(username: String, password: String) : Boolean{
-        return try {
-            connection = XMPPTCPConnection(config)
-            connection!!.connect()
-            connection!!.login(username, password)
-            println("Logged in as: $username")
-            true
+    suspend fun login(username: String, password: String) : Boolean{
+        try {
+            return withContext(Dispatchers.IO){
+                connection = XMPPTCPConnection(config)
+                connection!!.connect()
+
+                if (connection!!.isConnected) {
+                    println("Connection to server successful")
+                    connection!!.login(username, password)
+                    println("Logged in as: $username")
+                    true
+                } else {
+                    println("Failed to connect to server")
+                    false
+                }
+            }
         } catch (e: Exception) {
-            throw e
-            false
+            println("El error aqui apareceeeee")
+            e.printStackTrace()
+            return false
         }
+
     }
 
 

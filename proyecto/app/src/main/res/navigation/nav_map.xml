@@ -9,5 +9,14 @@
         android:id="@+id/loginFragment"
         android:name="com.chatredes.ui.pantallas.loginFragment"
         android:label="fragment_login"
-        tools:layout="@layout/fragment_login" />
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_loginFragment_to_lstChatFragment"
+            app:destination="@id/lstChatFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/lstChatFragment"
+        android:name="com.chatredes.ui.pantallas.lstChatFragment"
+        android:label="fragment_lst_chat"
+        tools:layout="@layout/fragment_lst_chat" />
 </navigation>

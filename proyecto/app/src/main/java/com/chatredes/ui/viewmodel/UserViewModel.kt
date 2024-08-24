@@ -1,6 +1,7 @@
 package com.chatredes.ui.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,25 +17,29 @@ class UserViewModel @Inject constructor(
     private val userUseCase: UserUseCase
 ): ViewModel() {
 
-    private val _isLogged = MutableLiveData<Boolean>()
-    val isLogged get() = _isLogged
+    private val _status = MutableLiveData<StatusApp>()
+    val status get() = _status
 
-    private val _message = MutableLiveData<String>()
-    val message get() = _message
-
+    fun connect() {
+        viewModelScope.launch {
+            userUseCase.connect()
+        }
+    }
 
     fun login(username: String, password: String) {
+        _status.value = StatusApp.Loading
         viewModelScope.launch {
             try {
-                _isLogged.value = userUseCase.login(username, password)
-                if (_isLogged.value == true){
-                    _message.value = "Inicio de sesión exitoso"
+
+                val isLogged = userUseCase.login(username, password)
+                if (isLogged){
+                    _status.value = StatusApp.Success
                 }else{
-                    _message.value = "Inicio de sesión fallido"
+                    _status.value = StatusApp.Error("Error al iniciar sesión")
                 }
             }catch (e: Exception){
-                _isLogged.value = false
-                _message.value = e.message
+                _status.value = StatusApp.Error("Error al iniciar sesión")
+                Log.e("El error de login es: ",e.message.toString())
             }
 
         }

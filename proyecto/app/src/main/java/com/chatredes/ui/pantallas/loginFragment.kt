@@ -8,9 +8,12 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.chatredes.R
 import com.chatredes.databinding.FragmentLoginBinding
+import com.chatredes.ui.viewmodel.StatusApp
 import com.chatredes.ui.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -26,6 +29,7 @@ class loginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentLoginBinding.inflate(inflater, container, false) // binding
+        viewModel.connect() // ViewModel
         return binding.root
     }
 
@@ -36,16 +40,39 @@ class loginFragment : Fragment() {
         setListeners()
     }
 
+    private fun setVisibility(visibility: Int) {
+        binding.apply {
+            textLogin.visibility = visibility
+            ILCorreo.visibility = visibility
+            ILContrasena.visibility = visibility
+            btnIniciarSesion.visibility = visibility
+        }
+    }
+
     private fun setObservers() {
-        viewModel.isLogged.observe(viewLifecycleOwner, Observer{
-            if (it) {
-                Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
-            }else{
-                Toast.makeText(context, "Inicio de sesión fallido", Toast.LENGTH_SHORT).show()
+        viewModel.status.observe(viewLifecycleOwner, Observer {
+            when(it){
+                is StatusApp.Loading -> {
+                    binding.pbLogin.visibility = View.VISIBLE
+                    setVisibility(View.GONE)
+                }
+                is StatusApp.Default -> {
+                    binding.pbLogin.visibility = View.GONE
+                    setVisibility(View.VISIBLE)
+                }
+                is StatusApp.Success -> {
+                    binding.pbLogin.visibility = View.GONE
+                    setVisibility(View.VISIBLE)
+                    binding.btnIniciarSesion.isEnabled = false
+                    requireView().findNavController().navigate(
+                        R.id.action_loginFragment_to_lstChatFragment
+                    )
+                }
+                is StatusApp.Error -> {
+                    binding.pbLogin.visibility = View.GONE
+                    Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+                }
             }
-        })
-        viewModel.message.observe(viewLifecycleOwner, Observer{
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         })
     }
 
