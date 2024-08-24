@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.chatredes.R
 import com.chatredes.databinding.FragmentLstChatBinding
@@ -81,7 +82,9 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
     }
 
     override fun onContactClick(contact: Contact) {
-        Toast.makeText(requireContext(), "Contacto: ${contact.username}", Toast.LENGTH_SHORT).show()
+        requireView().findNavController().navigate(
+            lstChatFragmentDirections.actionLstChatFragmentToChatFragment(contact.username)
+        )
     }
 
 

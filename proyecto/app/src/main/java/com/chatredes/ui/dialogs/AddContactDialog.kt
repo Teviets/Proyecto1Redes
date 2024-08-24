@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.viewModels
 import com.chatredes.databinding.DialogAddContactBinding
 import com.chatredes.ui.viewmodel.ContactViewModel
 import com.chatredes.ui.viewmodel.StatusApp
@@ -31,12 +30,11 @@ class AddContactDialog (private val viewModel: ContactViewModel): DialogFragment
         setUpObservers()
 
         return dialog!!
-
     }
 
     private fun setUpObservers() {
-        viewModel.status.observe(this){
-            when(it){
+        viewModel.status.observe(this) { status ->
+            when (status) {
                 is StatusApp.Loading -> {
                     binding.progressBar.visibility = View.VISIBLE
                     setVisiblity(View.GONE)
@@ -47,12 +45,12 @@ class AddContactDialog (private val viewModel: ContactViewModel): DialogFragment
                     binding.buttonAddContact.isEnabled = false
                     binding.buttonCancel.isEnabled = false
                     Toast.makeText(requireContext(), "Contacto agregado", Toast.LENGTH_SHORT).show()
-                    dialog?.dismiss()
+                    dialog?.dismiss() // Cerrar el diálogo cuando el estado es Success
                 }
                 is StatusApp.Error -> {
                     binding.progressBar.visibility = View.GONE
                     setVisiblity(View.VISIBLE)
-                    Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), status.message, Toast.LENGTH_SHORT).show()
                 }
                 is StatusApp.Default -> {
                     setVisiblity(View.VISIBLE)
@@ -70,17 +68,16 @@ class AddContactDialog (private val viewModel: ContactViewModel): DialogFragment
         binding.dialogTitle.visibility = visibility
     }
 
-    private fun setListeners(){
-        binding.buttonAddContact.setOnClickListener{
+    private fun setListeners() {
+        binding.buttonAddContact.setOnClickListener {
             val contactName = binding.editTextContactName.editText?.text.toString()
             val contactJID = binding.editTextContactJID.editText?.text.toString()
 
-            if(contactName.isNotBlank() && contactJID.isNotBlank()){
-                viewModel.addContact(contactName, contactJID)
+            if (contactName.isNotBlank() && contactJID.isNotBlank()) {
+                viewModel.addContact(contactJID, contactName)
             }
-            dismiss()
         }
-        binding.buttonCancel.setOnClickListener{
+        binding.buttonCancel.setOnClickListener {
             dismiss()
         }
     }

@@ -31,7 +31,7 @@ class ContactViewModel @Inject constructor(
                 val contacts = contactsUseCase.getContacts()
                 if (contacts.isNotEmpty()){
                     _contacts.value = contacts
-                    _status.value = StatusApp.Success
+                    _status.value = StatusApp.Default
                 }else{
                     _status.value = StatusApp.Error("No hay contactos")
                 }
@@ -47,6 +47,7 @@ class ContactViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 contactsUseCase.addContact(contact, name)
+                getContacts()
                 _status.value = StatusApp.Success
             }catch (e: Exception){
                 Log.e("Error de add contact", e.toString())

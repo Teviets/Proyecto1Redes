@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -87,12 +88,13 @@ dependencies {
     implementation ("androidx.navigation:navigation-fragment-ktx:2.5.3")
     implementation ("androidx.navigation:navigation-ui-ktx:2.5.3")
     implementation ("androidx.preference:preference-ktx:1.1.1")
+    kapt("androidx.navigation:navigation-safe-args-gradle-plugin:2.5.3")
 
     // Retrofit
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.9.1")
-    
+
 
     // Hilt
     implementation ("com.google.dagger:hilt-android:2.50")
@@ -119,9 +121,4 @@ dependencies {
     implementation("org.igniterealtime.smack:smack-im:4.4.0") {
         exclude(group = "xpp3", module = "xpp3_min")
     }
-
-
-
-
-
 }
