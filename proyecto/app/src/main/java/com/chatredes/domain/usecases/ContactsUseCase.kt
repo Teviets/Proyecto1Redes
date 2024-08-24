@@ -9,11 +9,20 @@ class ContactsUseCase @Inject constructor(
 ) {
 
 
-    fun getContacts(): List<Contact> {
-        return repo.getContacts()
+    suspend fun getContacts(): List<Contact> {
+        try{
+            return repo.getContacts()
+        }catch (e: Exception){
+            throw e
+        }
+
     }
 
-    fun addContact(contact: String) {
-        repo.addContact(contact)
+    suspend fun addContact(contact: String) {
+        try{
+            repo.addContact(contact)
+        }catch (e: Exception){
+            throw e
+        }
     }
 }

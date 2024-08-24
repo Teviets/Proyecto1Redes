@@ -153,7 +153,7 @@ class XMPPClient (
         }
     }
 
-    fun getContacts(): List<Contact> {
+    suspend fun getContacts(): List<Contact> {
         val roster = Roster.getInstanceFor(connection)
         val contacts = mutableListOf<Contact>()
 
