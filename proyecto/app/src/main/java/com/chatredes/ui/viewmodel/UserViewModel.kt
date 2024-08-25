@@ -67,6 +67,7 @@ class UserViewModel @Inject constructor(
     }
 
     fun deleteAccount() {
+
         userUseCase.deleteAccount()
     }
 

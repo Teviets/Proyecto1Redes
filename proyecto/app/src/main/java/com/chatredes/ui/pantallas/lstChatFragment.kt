@@ -17,6 +17,7 @@ import com.chatredes.domain.models.Contact
 import com.chatredes.ui.adapter.ContactAdapter
 import com.chatredes.ui.dialogs.AddContactDialog
 import com.chatredes.ui.viewmodel.ContactViewModel
+import com.chatredes.ui.viewmodel.StatusApp
 import com.chatredes.ui.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -61,10 +62,30 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
         }
         binding.toolbar.setOnMenuItemClickListener {
             when(it.itemId){
-                R.id.logout -> {
-                    val manager = SessionManager(requireContext())
-                    manager.logoutUser()
+                R.id.action_logout -> {
+                    UserViewModel.logout()
                     requireView().findNavController().navigate(R.id.loginFragment)
+                    true
+                }
+                R.id.action_deleteaccount -> {
+
+                    requireView().findNavController().navigate(R.id.loginFragment)
+                    true
+                }
+                R.id.action_disponiblity -> {
+                    // todo estado disponible
+                    true
+                }
+                R.id.action_status -> {
+                    // todo estado ausente
+                    true
+                }
+                R.id.action_NDisponible -> {
+                    // todo estado no disponible
+                    true
+                }
+                R.id.action_ocupado -> {
+                    // todo estado ocupado
                     true
                 }
                 else -> false
@@ -81,6 +102,26 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
         viewModel.contacts.observe(viewLifecycleOwner, Observer{
             contacts = it
             setUpRecyclerView()
+        })
+
+        UserViewModel.status.observe(viewLifecycleOwner, Observer {
+            when(it){
+                is StatusApp.Loading -> {
+                    // todo prograss bar
+                }
+                is StatusApp.Default -> {
+                    // todo vista normal
+                }
+                is StatusApp.Error -> {
+                    // todo mensaje de error
+                    Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+                }
+                is StatusApp.Success -> {
+                    requireView().findNavController().navigate(
+                        lstChatFragmentDirections.actionLstChatFragmentToLoginFragment()
+                    )
+                }
+            }
         })
     }
 
