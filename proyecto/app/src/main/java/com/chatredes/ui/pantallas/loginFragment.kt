@@ -64,6 +64,7 @@ class loginFragment : Fragment() {
                     binding.pbLogin.visibility = View.GONE
                     setVisibility(View.VISIBLE)
                     binding.btnIniciarSesion.isEnabled = false
+
                     requireView().findNavController().navigate(
                         R.id.action_loginFragment_to_lstChatFragment
                     )

@@ -7,7 +7,11 @@ data class Message(
     val receiver: String,
     val message: String,
     val timestamp: Long
-)
+){
+    override fun toString(): String {
+        return "$message"
+    }
+}
 
 
 fun Message.toSmackMessage(): org.jivesoftware.smack.packet.Message {

@@ -74,7 +74,7 @@ class AddContactDialog (private val viewModel: ContactViewModel): DialogFragment
             val contactJID = binding.editTextContactJID.editText?.text.toString()
 
             if (contactName.isNotBlank() && contactJID.isNotBlank()) {
-                viewModel.addContact(contactJID, contactName)
+                viewModel.addContact(contactJID+"@alumchat.lol", contactName)
             }
         }
         binding.buttonCancel.setOnClickListener {
