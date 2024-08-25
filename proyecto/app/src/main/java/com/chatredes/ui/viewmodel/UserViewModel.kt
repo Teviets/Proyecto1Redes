@@ -67,8 +67,18 @@ class UserViewModel @Inject constructor(
     }
 
     fun deleteAccount() {
+        _status.value = StatusApp.Loading
+        viewModelScope.launch {
+            try {
+                userUseCase.deleteAccount()
+                manager.LogoutUser()
+                _status.value = StatusApp.Success
+            }catch (e: Exception) {
+                _status.value = StatusApp.Error("Error al eliminar cuenta")
+                Log.e("El error de delete es: ", e.message.toString())
+            }
+        }
 
-        userUseCase.deleteAccount()
     }
 
     fun logout() {

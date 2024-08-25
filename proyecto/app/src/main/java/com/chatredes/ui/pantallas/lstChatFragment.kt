@@ -64,12 +64,10 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
             when(it.itemId){
                 R.id.action_logout -> {
                     UserViewModel.logout()
-                    requireView().findNavController().navigate(R.id.loginFragment)
                     true
                 }
                 R.id.action_deleteaccount -> {
-
-                    requireView().findNavController().navigate(R.id.loginFragment)
+                    UserViewModel.deleteAccount()
                     true
                 }
                 R.id.action_disponiblity -> {
