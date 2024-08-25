@@ -17,4 +17,28 @@
         app:showAsAction="always"
         android:icon="@drawable/ic_search"
         />
+
+    <item
+        android:id="@+id/action_disponiblity"
+        android:title="Disponible"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/action_status"
+        android:title="Ausente"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/action_NDisponible"
+        android:title="No disponible"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/action_ocupado"
+        android:title="Ocupado"
+        app:showAsAction="never"
+        />
 </menu>

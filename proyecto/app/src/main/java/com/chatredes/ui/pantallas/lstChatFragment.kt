@@ -17,12 +17,14 @@ import com.chatredes.domain.models.Contact
 import com.chatredes.ui.adapter.ContactAdapter
 import com.chatredes.ui.dialogs.AddContactDialog
 import com.chatredes.ui.viewmodel.ContactViewModel
+import com.chatredes.ui.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
 
     private val viewModel: ContactViewModel by viewModels()
+    private val UserViewModel: UserViewModel by viewModels()
 
     private lateinit var binding: FragmentLstChatBinding
 
@@ -57,12 +59,22 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
         binding.IBAdd.setOnClickListener {
             showAddContactDialog()
         }
+        binding.toolbar.setOnMenuItemClickListener {
+            when(it.itemId){
+                R.id.logout -> {
+                    val manager = SessionManager(requireContext())
+                    manager.logoutUser()
+                    requireView().findNavController().navigate(R.id.loginFragment)
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     private fun showAddContactDialog(){
         val dialog = AddContactDialog(viewModel)
         dialog.show(childFragmentManager, "AddContactDialog")
-
     }
 
     private fun setObservers() {

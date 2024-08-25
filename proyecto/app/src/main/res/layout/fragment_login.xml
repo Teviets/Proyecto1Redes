@@ -104,13 +104,31 @@
                 android:layout_marginBottom="20dp"
                 />
 
+            <TextView
+                android:id="@+id/tv_Registro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginHorizontal="30dp"
+                android:layout_below="@+id/btn_iniciar_sesion"
+                android:text="@string/registro"
+                android:textSize="15sp"
+                android:layout_gravity="center"
+                android:layout_centerHorizontal="true"
+                android:textStyle="bold"
+                android:layout_marginBottom="20dp"
+                android:clickable="true"
+                />
+
 
             <ProgressBar
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/pb_login"
+                android:layout_below="@+id/imageView"
                 android:layout_centerVertical="true"
                 android:layout_centerHorizontal="true"
+                android:layout_marginTop="45dp"
                 android:visibility="gone"
                 />
 

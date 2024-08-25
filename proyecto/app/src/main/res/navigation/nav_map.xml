@@ -22,6 +22,9 @@
         <action
             android:id="@+id/action_lstChatFragment_to_chatFragment"
             app:destination="@id/chatFragment" />
+        <action
+            android:id="@+id/action_lstChatFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
     </fragment>
     <fragment
         android:id="@+id/chatFragment"

@@ -51,8 +51,16 @@ class UserViewModel @Inject constructor(
     }
 
     fun registerAccount(username: String, password: String) {
+        _status.value = StatusApp.Loading
         viewModelScope.launch {
-            userUseCase.registerAccount(username, password)
+            try{
+                userUseCase.registerAccount(username, password)
+                _status.value = StatusApp.Default
+            }catch (e: Exception){
+                _status.value = StatusApp.Error("Error al registrar cuenta")
+                Log.e("El error de registro es: ",e.message.toString())
+            }
+
 
         }
 
@@ -63,7 +71,18 @@ class UserViewModel @Inject constructor(
     }
 
     fun logout() {
-        userUseCase.logout()
+        _status.value = StatusApp.Loading
+        viewModelScope.launch {
+            try {
+                userUseCase.logout()
+                manager.LogoutUser()
+                _status.value = StatusApp.Success
+            }catch (e: Exception) {
+                _status.value = StatusApp.Error("Error al cerrar sesión")
+                Log.e("El error de logout es: ", e.message.toString())
+            }
+        }
+
     }
 
     fun changeDisponibility(status: String) {

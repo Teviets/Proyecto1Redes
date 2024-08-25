@@ -8,7 +8,9 @@ import com.chatredes.domain.models.toMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jivesoftware.smack.ConnectionConfiguration
+import org.jivesoftware.smack.ReconnectionManager
 import org.jivesoftware.smack.SmackException
+import org.jivesoftware.smack.StanzaListener
 import org.jivesoftware.smack.XMPPConnection
 import org.jivesoftware.smack.chat2.ChatManager
 import org.jivesoftware.smack.filter.StanzaTypeFilter
@@ -17,6 +19,7 @@ import org.jivesoftware.smack.tcp.XMPPTCPConnection
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration
 import org.jivesoftware.smackx.iqregister.AccountManager
 import org.jivesoftware.smack.roster.Roster
+import org.jivesoftware.smackx.ping.PingManager
 import org.jxmpp.jid.EntityBareJid
 import org.jxmpp.jid.impl.JidCreate
 import org.jxmpp.jid.parts.Localpart
@@ -27,6 +30,7 @@ class XMPPClient private constructor(private val server: String) {
     private var config: XMPPTCPConnectionConfiguration? = null
     private val receivedMessages = mutableListOf<Message>()
     private val listeners = mutableListOf<MessageListener>()
+    private var stanzaListener: StanzaListener? = null
 
     companion object {
         @Volatile
@@ -56,9 +60,10 @@ class XMPPClient private constructor(private val server: String) {
     suspend fun login(username: String, password: String): Boolean {
         return try {
             withContext(Dispatchers.IO) {
-                if (connection == null) {
-                    connection = XMPPTCPConnection(config)
-                }
+
+                connection?.disconnect()
+
+                connection = XMPPTCPConnection(config)
 
                 connection!!.connect()
 
@@ -66,13 +71,6 @@ class XMPPClient private constructor(private val server: String) {
                     println("Connection to server successful")
                     connection!!.login(username, password)
                     println("Logged in as: $username")
-                    // Ensure that the connection is authenticated and ready
-                    if (connection!!.isAuthenticated) {
-                        println("Authenticated successfully")
-                        setupStanzaListener()
-                    } else {
-                        println("Failed to authenticate.")
-                    }
                     true
                 } else {
                     println("Failed to connect to server")
@@ -85,6 +83,13 @@ class XMPPClient private constructor(private val server: String) {
         }
     }
 
+    private fun setupReconnectionManager() {
+        val reconnectionManager = ReconnectionManager.getInstanceFor(connection)
+        reconnectionManager.enableAutomaticReconnection()
+        reconnectionManager.setReconnectionPolicy(ReconnectionManager.ReconnectionPolicy.RANDOM_INCREASING_DELAY)
+    }
+
+
     fun changeDisponibility(status: String) {
         val presence = Presence(Presence.Type.available)
         presence.status = status
@@ -93,12 +98,35 @@ class XMPPClient private constructor(private val server: String) {
 
     fun disconnect() {
         println("Disconnecting from XMPP server")
+        connection?.removeAsyncStanzaListener(stanzaListener)
         connection?.disconnect()
         connection = null
         println("Disconnected from XMPP server")
     }
 
+    fun reconnect() {
+        try {
+            connection?.disconnect()
+            connection?.connect()
+            Log.d("XMPPClient", "Reconnected to XMPP server.")
+            if (connection?.isAuthenticated == true) {
+                setupStanzaListener()
+                Log.d("XMPPClient", "Stanza listener reconfigured after reconnection.")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.d("XMPPClient", "Failed to reconnect: ${e.message}")
+        }
+    }
+
     fun sendMessage(message: Message) {
+
+        if (connection?.isConnected != true || connection?.isAuthenticated != true) {
+            Log.d("XMPPClient", "Connection is not active, not sending message.")
+            reconnect()
+            return
+        }
+
         val stanza = connection?.stanzaFactory
             ?.buildMessageStanza()
             ?.to(message.receiver)
@@ -178,15 +206,39 @@ class XMPPClient private constructor(private val server: String) {
         return contacts
     }
 
+    fun setPresenceActive(){
+        val presence = Presence(Presence.Type.available)
+        connection?.sendStanza(presence)
+    }
+
+    fun setupListenerOnStart() {
+        // Asegúrate de que la conexión esté establecida y autenticada
+        if (connection?.isConnected == true && connection?.isAuthenticated == true) {
+            setupStanzaListener() // Configura el listener si la conexión es válida
+        } else {
+            Log.d("XMPPClient", "Connection is not ready. Cannot set up listener.")
+        }
+    }
+
+
     fun setupStanzaListener() {
-        connection?.addAsyncStanzaListener({ stanza ->
-            if (stanza is org.jivesoftware.smack.packet.Message) {
-                val message = stanza
-                Log.d("XMPPClient", "Received message stanza: ${message.body}")
-                // Aquí puedes manejar el mensaje entrante
-                handleIncomingMessage(message)
+        connection?.removeAsyncStanzaListener(stanzaListener)
+        Log.d("XMPPClient", "Setting up stanza listener without filter")
+        stanzaListener = StanzaListener { packet ->
+            if (packet is org.jivesoftware.smack.packet.Message) {
+                Log.d("XMPPClient", "Received message: ${packet.body}")
+                handleIncomingMessage(packet)
+            } else {
+                Log.d("XMPPClient", "Received non-message stanza, ignoring.")
             }
-        }, StanzaTypeFilter(org.jivesoftware.smack.packet.Message::class.java))
+        }
+        connection?.addAsyncStanzaListener(stanzaListener, StanzaTypeFilter(org.jivesoftware.smack.packet.Message::class.java))
+        Log.d("XMPPClient", "Stanza listener set up")
+    }
+
+    private fun setUpPingManager() {
+        val pingManager = PingManager.getInstanceFor(connection)
+        pingManager.pingInterval = 300 // 5 minutos
     }
 
     private fun handleIncomingMessage(message: org.jivesoftware.smack.packet.Message) {

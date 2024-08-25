@@ -35,10 +35,12 @@ class MessageViewModel @Inject constructor(
 
         messageUseCase.addListener(object : MessageListener {
             override fun onNewMessage(message: Message) {
-                val updatedMessages = _messages.value.orEmpty() + message
                 Log.d("MessageViewModel", "New message received: $message")
+                Log.d("MessageViewModel", "Message details - from: ${message.sender}, body: ${message.message}")
+                val updatedMessages = _messages.value.orEmpty() + message
                 _messages.postValue(updatedMessages)
             }
+
 
             override fun onMessagesUpdated(messages: List<Message>) {
                 Log.d("MessageViewModel", "Messages updated: $messages")
@@ -61,6 +63,10 @@ class MessageViewModel @Inject constructor(
                 _status.value = StatusApp.Error("Error al enviar mensaje")
             }
         }
+    }
+
+    fun getMessages(){
+        messageUseCase.initListener()
     }
 
     

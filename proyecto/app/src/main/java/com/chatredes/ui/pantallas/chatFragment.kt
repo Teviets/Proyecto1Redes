@@ -17,6 +17,7 @@ import com.chatredes.ui.adapter.MessageAdapter
 import com.chatredes.ui.viewmodel.MessageViewModel
 import com.chatredes.ui.viewmodel.StatusApp
 import dagger.hilt.android.AndroidEntryPoint
+import org.jivesoftware.smack.chat2.Chat
 
 @AndroidEntryPoint
 class chatFragment : Fragment() {
@@ -40,6 +41,8 @@ class chatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        ChatViewModel.getMessages()
 
         setObservers()
         setListener()

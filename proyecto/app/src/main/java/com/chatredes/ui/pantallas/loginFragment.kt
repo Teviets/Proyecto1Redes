@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import com.chatredes.R
 import com.chatredes.data.constantes.SessionManager
 import com.chatredes.databinding.FragmentLoginBinding
+import com.chatredes.ui.dialogs.RegisterDialog
 import com.chatredes.ui.viewmodel.StatusApp
 import com.chatredes.ui.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -97,6 +98,15 @@ class loginFragment : Fragment() {
                 viewModel.login(username, password)
             }
         }
+
+        binding.tvRegistro.setOnClickListener{
+            showDialog()
+        }
+    }
+
+    private fun showDialog() {
+        val dialog = RegisterDialog(viewModel)
+        dialog.show(parentFragmentManager, "register")
     }
 
 
