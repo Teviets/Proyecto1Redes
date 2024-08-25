@@ -11,7 +11,7 @@ import com.chatredes.R
 import com.chatredes.domain.models.Message
 
 class MessageAdapter(
-    private val dataset: List<Message>
+    private val dataset: MutableList<Message>
 ) : RecyclerView.Adapter<MessageAdapter.ViewHolder>() {
 
     class ViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
@@ -20,8 +20,8 @@ class MessageAdapter(
         private val tvMessage: TextView = view.findViewById(R.id.textchat)
 
         fun setData(message: Message) {
-            tvSender.text = message.sender
-            tvMessage.text = message.message
+            tvSender.text = message.sender.toString()
+            tvMessage.text = message.message.toString()
 
             // Para depuración
             println("DEBUG: Setting data for message: Sender=${message.sender}, Message=${message.message}")
@@ -43,4 +43,10 @@ class MessageAdapter(
     }
 
     override fun getItemCount(): Int = dataset.size
+
+    fun updateMessages(newMessages: List<Message>) {
+        dataset.clear()
+        dataset.addAll(newMessages)
+        notifyDataSetChanged()
+    }
 }

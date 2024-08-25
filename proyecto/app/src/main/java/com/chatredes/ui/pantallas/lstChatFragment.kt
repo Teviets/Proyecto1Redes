@@ -11,6 +11,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.chatredes.R
+import com.chatredes.data.constantes.SessionManager
 import com.chatredes.databinding.FragmentLstChatBinding
 import com.chatredes.domain.models.Contact
 import com.chatredes.ui.adapter.ContactAdapter
@@ -35,6 +36,9 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
     ): View? {
         binding = FragmentLstChatBinding.inflate(inflater, container, false)
 
+
+        val manager = SessionManager(requireContext())
+        Toast.makeText(requireContext(), "Bienvenido ${manager.getUserDetails()["username"]}", Toast.LENGTH_SHORT).show()
         setObservers()
         setListeners()
         viewModel.getContacts()

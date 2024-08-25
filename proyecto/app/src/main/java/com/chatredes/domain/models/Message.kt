@@ -25,9 +25,9 @@ fun Message.toSmackMessage(): org.jivesoftware.smack.packet.Message {
 
 fun org.jivesoftware.smack.packet.Message.toMessage(): Message {
     return Message(
-        sender = this.from.toString(),
-        receiver = this.to.toString(),
-        message = this.body,
-        timestamp = this.stanzaId.toLong()
+        sender = this.from.asBareJid().toString(),
+        receiver = this.to.asBareJid().toString(),
+        message = this.body ?: "",
+        timestamp = System.currentTimeMillis()
     )
 }

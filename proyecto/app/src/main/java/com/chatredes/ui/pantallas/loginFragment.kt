@@ -1,6 +1,7 @@
 package com.chatredes.ui.pantallas
 
 import android.os.Bundle
+import android.se.omapi.Session
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.chatredes.R
+import com.chatredes.data.constantes.SessionManager
 import com.chatredes.databinding.FragmentLoginBinding
 import com.chatredes.ui.viewmodel.StatusApp
 import com.chatredes.ui.viewmodel.UserViewModel
@@ -65,12 +67,21 @@ class loginFragment : Fragment() {
                     setVisibility(View.VISIBLE)
                     binding.btnIniciarSesion.isEnabled = false
 
+
+                    val manager = SessionManager(requireContext())
+                    manager.createLoginSession(
+                        binding.etCorreo.text.toString(),
+                        binding.etContrasena.text.toString(),
+                        binding.etCorreo.text.toString(),
+                        true
+                    )
                     requireView().findNavController().navigate(
                         R.id.action_loginFragment_to_lstChatFragment
                     )
                 }
                 is StatusApp.Error -> {
                     binding.pbLogin.visibility = View.GONE
+                    setVisibility(View.VISIBLE)
                     Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
                 }
             }
