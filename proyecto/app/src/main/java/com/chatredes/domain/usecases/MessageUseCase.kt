@@ -55,8 +55,8 @@ class MessageUseCase @Inject constructor(
     private fun notifyMessagesUpdated(messages: List<Message>) {
         listeners.forEach { it.onMessagesUpdated(messages) }
     }
-
+/*
     fun initListener(){
         repo.setupListenerOnStart()
-    }
+    }*/
 }

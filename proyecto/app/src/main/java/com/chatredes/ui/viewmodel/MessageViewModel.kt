@@ -64,10 +64,10 @@ class MessageViewModel @Inject constructor(
             }
         }
     }
-
+/*
     fun getMessages(){
         messageUseCase.initListener()
-    }
+    }*/
 
     
 
