@@ -32,7 +32,6 @@ class XMPPClient private constructor(private val server: String) {
     private var config: XMPPTCPConnectionConfiguration? = null
     private val receivedMessages = mutableListOf<Message>()
     private val listeners = mutableListOf<MessageListener>()
-    private var stanzaListener: StanzaListener? = null
     private var messageHandler: MessageHandler? = null
 
     companion object {
@@ -47,12 +46,8 @@ class XMPPClient private constructor(private val server: String) {
     }
 
     fun connect() {
-
-        if (connection != null && connection!!.isConnected) {
-            Log.d("XMPPClient", "Already connected, disconnecting before reconnecting.")
-            disconnect()
-        }
-
+        // Disconnect any previous connection before establishing a new one
+        disconnect()
 
         if (config == null) {
             config = XMPPTCPConnectionConfiguration.builder()
@@ -64,12 +59,10 @@ class XMPPClient private constructor(private val server: String) {
                 .build()
         }
 
-        println("Configured to connect to XMPP server")
         connection = XMPPTCPConnection(config)
         try {
             connection?.connect()
-            setUpReconnectionManager()
-            println("Configured to connect to XMPP server")
+            Log.d("XMPPClient", "Connected to XMPP server")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -78,25 +71,19 @@ class XMPPClient private constructor(private val server: String) {
     suspend fun login(username: String, password: String): Boolean {
         return try {
             withContext(Dispatchers.IO) {
-
-                connection?.disconnect()
-
+                // Ensure connection is fresh
+                disconnect()
                 connection = XMPPTCPConnection(config)
-
-                ReconnectionManager.getInstanceFor(connection).enableAutomaticReconnection()
 
                 connection!!.connect()
 
-                messageHandler = MessageHandler()
-
                 if (connection!!.isConnected) {
-                    println("Connection to server successful")
                     connection!!.login(username, password)
-                    StanzaList()
-                    println("Logged in as: $username")
+                    Log.d("XMPPClient", "Logged in as: $username")
+                    setUpPingManager()
                     true
                 } else {
-                    println("Failed to connect to server")
+                    Log.d("XMPPClient", "Failed to connect to server")
                     false
                 }
             }
@@ -106,66 +93,39 @@ class XMPPClient private constructor(private val server: String) {
         }
     }
 
-    private fun setUpReconnectionManager() {
-        connection?.let { conn ->
-            conn.addConnectionListener(object : ConnectionListener {
-                override fun connected(connection: XMPPConnection?) {
-                    Log.d("XMPPClient", "Conectado exitosamente")
-                    // Reconfigura los listeners después de reconectar
-                    StanzaList()
-                    setPresenceActive()
-                }
-
-                override fun connectionClosedOnError(e: Exception?) {
-                    Log.d("XMPPClient", "Conexión cerrada debido a un error: ${e?.message}")
-                }
-
-                override fun connectionClosed() {
-                    Log.d("XMPPClient", "Conexión cerrada")
-                }
-
-                override fun authenticated(connection: XMPPConnection?, resumed: Boolean) {
-                    Log.d("XMPPClient", "Autenticado exitosamente")
-                }
-            })
-        }
+    private fun setupMessageListener() {
+        messageHandler = MessageHandler()
+        connection?.addStanzaListener(messageHandler, StanzaTypeFilter(org.jivesoftware.smack.packet.Message::class.java))
     }
 
-    fun reconnect() {
-        try {
+    private fun setupReconnectionManager() {
+        val reconnectionManager = ReconnectionManager.getInstanceFor(connection)
+        reconnectionManager.enableAutomaticReconnection()
+        reconnectionManager.setReconnectionPolicy(ReconnectionManager.ReconnectionPolicy.RANDOM_INCREASING_DELAY)
+    }
+
+
+
+    fun disconnect() {
+        if (connection?.isConnected == true) {
+            Log.d("XMPPClient", "Disconnecting from XMPP server")
+            connection?.removeAsyncStanzaListener(messageHandler)
             connection?.disconnect()
-            connection?.connect()
-            Log.d("XMPPClient", "Reconnected to XMPP server.")
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.d("XMPPClient", "Failed to reconnect: ${e.message}")
+            Log.d("XMPPClient", "Disconnected from XMPP server")
         }
+        connection = null
     }
 
 
-    fun changeDisponibility(status: String) {
+    fun changeDisponibility(mode: Presence.Mode) {
         val presence = Presence(Presence.Type.available)
-        presence.status = status
+        presence.mode = mode
         connection?.sendStanza(presence)
     }
 
-    fun disconnect() {
-        println("Disconnecting from XMPP server")
-        connection?.removeAsyncStanzaListener(stanzaListener)
-        connection?.disconnect()
-        connection = null
-        println("Disconnected from XMPP server")
-    }
 
 
     fun sendMessage(message: Message) {
-
-        if (connection?.isConnected != true || connection?.isAuthenticated != true) {
-            Log.d("XMPPClient", "Connection is not active, not sending message.")
-            reconnect()
-            return
-        }
-
         val stanza = connection?.stanzaFactory
             ?.buildMessageStanza()
             ?.to(message.receiver)
@@ -175,10 +135,9 @@ class XMPPClient private constructor(private val server: String) {
 
         stanza?.let {
             connection?.sendStanza(it)
-            // Add the sent message to the list
             receivedMessages.add(message)
             notifyMessageSent(message)
-            println("Message sent: $message")
+            Log.d("XMPPClient", "Message sent: $message")
         }
     }
 
@@ -194,25 +153,32 @@ class XMPPClient private constructor(private val server: String) {
         }
     }
 
-    fun registerAccount(username: String, password: String) {
-        try {
-            val accountManager = AccountManager.getInstance(connection)
-            accountManager.sensitiveOperationOverInsecureConnection(true)
+    suspend fun registerAccount(username: String, password: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                // Asegúrate de que no estás autenticado
+                if (connection?.isAuthenticated == true) {
+                    connection?.disconnect()
+                }
 
-            val attributes = HashMap<String, String>().apply {
-                put("username", username)
-                put("password", password)
+                // Reconecta si es necesario
+                if (connection?.isConnected != true) {
+                    connect()
+                }
+
+                val accountManager = AccountManager.getInstance(connection)
+                accountManager.sensitiveOperationOverInsecureConnection(true)
+
+                val localpart = Localpart.from(username)
+                accountManager.createAccount(localpart, password)
+                Log.d("XMPPClient", "Account registered successfully: $username")
+            } catch (e: Exception) {
+                Log.e("XMPPClient", "Failed to register account: ${e.message}")
+                throw e
             }
-
-            val localpart = Localpart.from(username)
-            accountManager.createAccount(localpart, password, attributes)
-            println("Account registered successfully: $username")
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-            println("Failed to register account: ${e.message}")
         }
     }
+
 
     fun addContact(jid: String, name: String) {
         try {
@@ -233,16 +199,24 @@ class XMPPClient private constructor(private val server: String) {
     }
 
     suspend fun getContacts(): List<Contact> {
-        val roster = Roster.getInstanceFor(connection)
-        val contacts = mutableListOf<Contact>()
+        try {
+            val roster = Roster.getInstanceFor(connection)
+            val contacts = mutableListOf<Contact>()
 
-        roster.entries.forEach { entry ->
-            val presence: Presence = roster.getPresence(entry.jid)
-            val status = presence.status ?: "Unavailable"
-            contacts.add(entry.toContact(status))
+            roster.entries.forEach { entry ->
+                val presence: Presence = roster.getPresence(entry.jid)
+                val status = presence.status ?: "Unavailable"
+                contacts.add(entry.toContact(status))
+                Log.d("XMPPClient", "Contact added: $entry")
+            }
+
+            return contacts
+        }catch (e: Exception){
+            e.printStackTrace()
+            Log.e("XMPPClient", "Failed to get contacts: ${e.message}")
+            throw e
         }
 
-        return contacts
     }
 
     fun setPresenceActive(){
@@ -267,17 +241,11 @@ class XMPPClient private constructor(private val server: String) {
         listeners.remove(listener)
     }
 
-    private fun notifyNewMessage(message: Message) {
-        Log.d("XMPPClient", "Notifying listeners of new message: $message")
-        listeners.forEach { it.onNewMessage(message) }
-    }
-
-
     private fun notifyMessageSent(message: Message) {
         listeners.forEach { it.onMessagesUpdated(receivedMessages) }
     }
 
-    fun getConnection(): XMPPConnection? {
+    fun getConnection(): XMPPTCPConnection? {
         return connection
     }
 }

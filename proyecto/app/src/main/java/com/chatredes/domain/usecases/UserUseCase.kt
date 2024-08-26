@@ -1,6 +1,8 @@
 package com.chatredes.domain.usecases
 
+import android.util.Log
 import com.chatredes.data.XMPP.XMPPClient
+import org.jivesoftware.smack.packet.Presence
 import javax.inject.Inject
 
 class UserUseCase @Inject constructor(
@@ -20,8 +22,13 @@ class UserUseCase @Inject constructor(
 
     }
 
-    fun registerAccount(username: String, password: String) {
-        repo.registerAccount(username, password)
+    suspend fun registerAccount(username: String, password: String) {
+        try {
+            repo.registerAccount(username, password)
+        } catch (e: Exception) {
+            Log.e("UserUseCase", "Error registering account: ${e.message}")
+            throw e
+        }
     }
 
     fun deleteAccount() {
@@ -32,7 +39,11 @@ class UserUseCase @Inject constructor(
         repo.disconnect()
     }
 
-    fun changeDisponibility(status: String) {
-        repo.changeDisponibility(status)
+    fun changeDisponibility(status: Presence.Mode) {
+        try {
+            repo.changeDisponibility(status)
+        }catch (e: Exception){
+            throw e
+        }
     }
 }

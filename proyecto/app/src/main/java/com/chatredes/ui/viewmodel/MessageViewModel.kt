@@ -18,7 +18,7 @@ import javax.inject.Inject
 class MessageViewModel @Inject constructor(
     @ApplicationContext context: Context,
     private val messageUseCase: MessageUseCase
-) :ViewModel(){
+) : ViewModel() {
 
     private val _messages = MutableLiveData<List<Message>>()
     val messages get() = _messages
@@ -36,17 +36,14 @@ class MessageViewModel @Inject constructor(
         messageUseCase.addListener(object : MessageListener {
             override fun onNewMessage(message: Message) {
                 Log.d("MessageViewModel", "New message received: $message")
-                Log.d("MessageViewModel", "Message details - from: ${message.sender}, body: ${message.message}")
                 val updatedMessages = _messages.value.orEmpty() + message
                 _messages.postValue(updatedMessages)
             }
-
 
             override fun onMessagesUpdated(messages: List<Message>) {
                 Log.d("MessageViewModel", "Messages updated: $messages")
                 _messages.postValue(messages)
             }
-
         })
     }
 
@@ -54,9 +51,7 @@ class MessageViewModel @Inject constructor(
         _status.value = StatusApp.Loading
         viewModelScope.launch {
             try {
-
                 messageUseCase.sendMessage(manager.getUserDetails()["username"]!!, message, to)
-
                 _status.value = StatusApp.Success
             } catch (e: Exception) {
                 Log.e("MessageViewModel", "Error sending message", e)
@@ -64,11 +59,9 @@ class MessageViewModel @Inject constructor(
             }
         }
     }
-/*
-    fun getMessages(){
-        messageUseCase.initListener()
-    }*/
 
-    
-
+    override fun onCleared() {
+        super.onCleared()
+        messageUseCase.clearListeners() // Limpia los listeners al destruir el ViewModel
+    }
 }

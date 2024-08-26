@@ -20,6 +20,7 @@ import com.chatredes.ui.viewmodel.ContactViewModel
 import com.chatredes.ui.viewmodel.StatusApp
 import com.chatredes.ui.viewmodel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import org.jivesoftware.smack.packet.Presence
 
 @AndroidEntryPoint
 class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
@@ -71,19 +72,19 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
                     true
                 }
                 R.id.action_disponiblity -> {
-                    // todo estado disponible
+                    UserViewModel.changeDisponibility(Presence.Mode.chat)
                     true
                 }
                 R.id.action_status -> {
-                    // todo estado ausente
+                    UserViewModel.changeDisponibility(Presence.Mode.away)
                     true
                 }
                 R.id.action_NDisponible -> {
-                    // todo estado no disponible
+                    UserViewModel.changeDisponibility(Presence.Mode.xa)
                     true
                 }
                 R.id.action_ocupado -> {
-                    // todo estado ocupado
+                    UserViewModel.changeDisponibility(Presence.Mode.dnd)
                     true
                 }
                 else -> false

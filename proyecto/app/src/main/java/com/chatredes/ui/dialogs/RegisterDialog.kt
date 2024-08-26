@@ -20,7 +20,7 @@ class RegisterDialog(
 
     override fun onCreateDialog(savedInstanceState: Bundle?): AlertDialog {
         binding = DialogRegisterBinding.inflate(LayoutInflater.from(context))
-
+        viewModel.connect()
         dialog = AlertDialog.Builder(requireContext())
             .setView(binding.root)
             .setCancelable(false)

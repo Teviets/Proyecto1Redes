@@ -10,6 +10,7 @@ import com.chatredes.domain.usecases.UserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
+import org.jivesoftware.smack.packet.Presence
 import javax.inject.Inject
 
 @HiltViewModel
@@ -53,17 +54,15 @@ class UserViewModel @Inject constructor(
     fun registerAccount(username: String, password: String) {
         _status.value = StatusApp.Loading
         viewModelScope.launch {
-            try{
+            try {
                 userUseCase.registerAccount(username, password)
-                _status.value = StatusApp.Default
-            }catch (e: Exception){
-                _status.value = StatusApp.Error("Error al registrar cuenta")
-                Log.e("El error de registro es: ",e.message.toString())
+                Log.d("UserViewModel", "Registration successful for $username")
+                _status.value = StatusApp.Success
+            } catch (e: Exception) {
+                Log.e("UserViewModel", "Error registering account: ${e.message}")
+                _status.value = StatusApp.Error("Error al registrar cuenta: ${e.message}")
             }
-
-
         }
-
     }
 
     fun deleteAccount() {
@@ -96,7 +95,13 @@ class UserViewModel @Inject constructor(
 
     }
 
-    fun changeDisponibility(status: String) {
-        userUseCase.changeDisponibility(status)
+    fun changeDisponibility(status: Presence.Mode) {
+        viewModelScope.launch {
+            try {
+                userUseCase.changeDisponibility(status)
+            }catch (e: Exception){
+                Log.e("El error de cambio de disponibilidad es: ", e.message.toString())
+            }
+        }
     }
 }

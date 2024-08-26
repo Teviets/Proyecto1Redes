@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.chatredes.data.constantes.SessionManager
 import com.chatredes.domain.models.Contact
 import com.chatredes.domain.usecases.ContactsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +25,8 @@ class ContactViewModel @Inject constructor(
     private val _status = MutableLiveData<StatusApp>()
     val status get() = _status
 
+    private val manager: SessionManager = SessionManager(context)
+
     fun getContacts() {
         _status.value = StatusApp.Loading
         viewModelScope.launch {
@@ -36,6 +39,8 @@ class ContactViewModel @Inject constructor(
                     _status.value = StatusApp.Error("No hay contactos")
                 }
             }catch (e: Exception){
+                e.printStackTrace()
+                Log.e("Error de get contacts", e.toString())
                 _status.value = StatusApp.Error("Error al obtener los contactos")
             }
         }

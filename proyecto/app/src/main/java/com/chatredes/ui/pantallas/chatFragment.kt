@@ -42,33 +42,27 @@ class chatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        //ChatViewModel.getMessages()
-
         setObservers()
         setListener()
     }
 
     private fun setObservers() {
-        ChatViewModel.messages.observe(viewLifecycleOwner, Observer {
-            Log.d("ChatFragment", "Messages observed: ${messages.size} messages")
-            setUpRecyclerView(it.filter { msg -> msg.receiver == args.JID || msg.sender == args.JID })
+        ChatViewModel.messages.observe(viewLifecycleOwner, Observer { msgList ->
+            Log.d("ChatFragment", "Messages observed: ${msgList.size} messages")
+            setUpRecyclerView(msgList.filter { msg -> msg.receiver == args.JID || msg.sender == args.JID })
         })
         ChatViewModel.status.observe(viewLifecycleOwner, Observer {
             when (it) {
                 is StatusApp.Loading -> {
-                    // todo proximo
+                    // Mostrar indicador de carga
                 }
-
                 is StatusApp.Default -> {
-                    // todo proximo
+                    // Estado por defecto
                 }
-
                 is StatusApp.Error -> {
                     Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
                 }
-
                 is StatusApp.Success -> {
-                    // todo proximo
                     Toast.makeText(requireContext(), "Mensaje enviado", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -91,12 +85,8 @@ class chatFragment : Fragment() {
 
     private fun setListener() {
         binding.IBEnviar.setOnClickListener {
-
             Log.d("ChatFragment", "Sending message: ${binding.ETMensaje.text}")
-            ChatViewModel.sendMessage(
-                binding.ETMensaje.text.toString(),
-                args.JID
-            )
+            ChatViewModel.sendMessage(binding.ETMensaje.text.toString(), args.JID)
             binding.ETMensaje.text!!.clear()
         }
     }

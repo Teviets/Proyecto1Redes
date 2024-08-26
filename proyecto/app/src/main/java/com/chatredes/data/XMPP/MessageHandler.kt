@@ -9,39 +9,18 @@ import org.jivesoftware.smack.packet.Stanza
 import org.jivesoftware.smackx.delay.packet.DelayInformation
 import org.pgpainless.key.selection.keyring.impl.XMPP
 
-class MessageHandler () : StanzaListener {
-
-
-    fun isAppRunning(context: Context): Boolean {
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
-        val runningAppProcesses = activityManager.runningAppProcesses ?: return false
-        for (processInfo in runningAppProcesses) {
-            if (processInfo.processName == context.packageName) {
-                if (processInfo.importance == android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
-                    for (d in processInfo.pkgList) {
-                        if (d == context.packageName) {
-                            return true
-                        }
-                    }
-                }
-            }
-        }
-        return false
-    }
+class MessageHandler : StanzaListener {
 
     override fun processStanza(stanza: Stanza) {
-        Log.d("MessageHandler", "Procesando stanza: ${stanza.toXML()}")
+        Log.d("MessageHandler", "Processing stanza: ${stanza.toXML()}")
         try {
-            if (stanza is Message) {
+            if (stanza is org.jivesoftware.smack.packet.Message) {
                 val message = stanza.toMessage()
 
                 if (message.message.isEmpty()) {
-                    Log.d("MessageHandler", "Mensaje vacío recibido, ignorando")
+                    Log.d("MessageHandler", "Empty message received, ignoring.")
                     return
                 }
-
-                // Procesar mensaje no vacío
-                Log.d("MessageHandler", "Procesando mensaje: ${message.message}")
 
                 val messageItem = com.chatredes.domain.models.Message(
                     sender = message.sender,
@@ -50,26 +29,20 @@ class MessageHandler () : StanzaListener {
                     timestamp = message.timestamp
                 )
 
-                val isNewMessage = stanza.extensions.none { it is DelayInformation }
+                val isNewMessage = stanza.extensions.none { it is org.jivesoftware.smackx.delay.packet.DelayInformation }
 
                 if (isNewMessage) {
-                    Log.d("MessageHandler", "Nuevo mensaje recibido: $messageItem")
-                    // Procesar nuevo mensaje aquí
+                    Log.d("MessageHandler", "New message received: $messageItem")
                 } else {
-                    Log.d("MessageHandler", "Mensaje retrasado recibido, considerando si procesar")
-                    // Procesar mensajes retrasados si es necesario
+                    Log.d("MessageHandler", "Delayed message received, processing as necessary.")
                 }
             } else {
-                Log.d("MessageHandler", "Stanza recibida no es un mensaje: ${stanza.toXML()}")
+                Log.d("MessageHandler", "Stanza received is not a message: ${stanza.toXML()}")
             }
-        } catch (e: NullPointerException) {
-            Log.e("MessageHandler", "Null Pointer Exception al procesar el mensaje: ${e.message}")
-        } catch (e: IllegalArgumentException) {
-            Log.e("MessageHandler", "Illegal Argument Exception: ${e.message}")
         } catch (e: Exception) {
-            Log.e("MessageHandler", "Error desconocido al procesar el stanza", e)
+            Log.e("MessageHandler", "Error processing stanza", e)
         } finally {
-            Log.d("MessageHandler END", "Continuando la escucha de mensajes...")
+            Log.d("MessageHandler END", "Continuing message listening...")
         }
     }
 }

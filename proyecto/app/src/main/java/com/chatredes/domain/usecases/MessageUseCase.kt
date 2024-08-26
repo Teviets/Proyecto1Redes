@@ -48,15 +48,8 @@ class MessageUseCase @Inject constructor(
         listeners.remove(listener)
     }
 
-    private fun notifyNewMessage(message: Message) {
-        listeners.forEach { it.onNewMessage(message) }
+    // Limpieza de listeners en caso de necesitarlo
+    fun clearListeners() {
+        listeners.clear()
     }
-
-    private fun notifyMessagesUpdated(messages: List<Message>) {
-        listeners.forEach { it.onMessagesUpdated(messages) }
-    }
-/*
-    fun initListener(){
-        repo.setupListenerOnStart()
-    }*/
 }

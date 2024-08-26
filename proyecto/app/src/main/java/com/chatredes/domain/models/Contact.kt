@@ -11,7 +11,7 @@ data class Contact(
 fun RosterEntry.toContact(status: String): Contact {
     return Contact(
         username = this.jid.toString(),
-        name = this.name,
+        name = this.name ?: this.jid.toString(),
         status = status
     )
 }
