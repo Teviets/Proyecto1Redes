@@ -3,15 +3,18 @@ package com.chatredes.data.XMPP
 import android.content.Context
 import android.util.Log
 import com.chatredes.domain.models.toMessage
+import com.chatredes.domain.models.toSmackMessage
 import org.jivesoftware.smack.StanzaListener
 import org.jivesoftware.smack.packet.Message
 import org.jivesoftware.smack.packet.Stanza
 import org.jivesoftware.smackx.delay.packet.DelayInformation
 import org.pgpainless.key.selection.keyring.impl.XMPP
 
-class MessageHandler : StanzaListener {
+class MessageHandler (
+    private val onNewMessage: (Message) -> Unit
+) : StanzaListener {
 
-    override fun processStanza(stanza: Stanza) {
+    override fun processStanza(stanza: Stanza)  {
         Log.d("MessageHandler", "Processing stanza: ${stanza.toXML()}")
         try {
             if (stanza is org.jivesoftware.smack.packet.Message) {
@@ -33,6 +36,7 @@ class MessageHandler : StanzaListener {
 
                 if (isNewMessage) {
                     Log.d("MessageHandler", "New message received: $messageItem")
+                    onNewMessage(messageItem.toSmackMessage())
                 } else {
                     Log.d("MessageHandler", "Delayed message received, processing as necessary.")
                 }

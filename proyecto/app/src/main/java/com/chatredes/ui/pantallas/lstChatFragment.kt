@@ -57,6 +57,34 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
         viewModel.getContacts()
     }
 
+    override fun onResume() {
+        super.onResume()
+        setObservers()
+        setListeners()
+        viewModel.getContacts()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        setObservers()
+        setListeners()
+        viewModel.getContacts()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        setObservers()
+        setListeners()
+        viewModel.getContacts()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        setObservers()
+        setListeners()
+        viewModel.getContacts()
+    }
+
     private fun setListeners() {
         binding.IBAdd.setOnClickListener {
             showAddContactDialog()
@@ -100,7 +128,11 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
     private fun setObservers() {
         viewModel.contacts.observe(viewLifecycleOwner, Observer{
             contacts = it
+            for (contact in contacts){
+                println("Contacto: ${contact.username}")
+            }
             setUpRecyclerView()
+            adapter.notifyDataSetChanged()
         })
 
         UserViewModel.status.observe(viewLifecycleOwner, Observer {

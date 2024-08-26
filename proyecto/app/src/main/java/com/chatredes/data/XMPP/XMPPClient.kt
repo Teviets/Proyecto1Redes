@@ -81,6 +81,7 @@ class XMPPClient private constructor(private val server: String) {
                     connection!!.login(username, password)
                     Log.d("XMPPClient", "Logged in as: $username")
                     setUpPingManager()
+                    setupMessageListener()
                     true
                 } else {
                     Log.d("XMPPClient", "Failed to connect to server")
@@ -94,7 +95,11 @@ class XMPPClient private constructor(private val server: String) {
     }
 
     private fun setupMessageListener() {
-        messageHandler = MessageHandler()
+        messageHandler = MessageHandler(){message ->
+            receivedMessages.add(message.toMessage())
+            notifyMessageSent(message.toMessage())
+            Log.d("XMPPClient", "Message received: $message")
+        }
         connection?.addStanzaListener(messageHandler, StanzaTypeFilter(org.jivesoftware.smack.packet.Message::class.java))
     }
 

@@ -34,5 +34,8 @@
         <argument
             android:name="JID"
             app:argType="string" />
+        <action
+            android:id="@+id/action_chatFragment_to_lstChatFragment"
+            app:destination="@id/lstChatFragment" />
     </fragment>
 </navigation>
