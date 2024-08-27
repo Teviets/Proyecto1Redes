@@ -40,13 +40,21 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
     ): View? {
         binding = FragmentLstChatBinding.inflate(inflater, container, false)
 
+        // Configura RecyclerView
+        adapter = ContactAdapter(mutableListOf(), this)
+        binding.recyclerChat.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            setHasFixedSize(true)
+            adapter = this@lstChatFragment.adapter
+        }
 
-        val manager = SessionManager(requireContext())
-        Toast.makeText(requireContext(), "Bienvenido ${manager.getUserDetails()["username"]}", Toast.LENGTH_SHORT).show()
+        // Observadores y listeners
         setObservers()
         setListeners()
+
+        // Obtiene los contactos
         viewModel.getContacts()
-        // Inflate the layout for this fragment
+
         return binding.root
     }
 
@@ -126,13 +134,9 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
     }
 
     private fun setObservers() {
-        viewModel.contacts.observe(viewLifecycleOwner, Observer{
-            contacts = it
-            for (contact in contacts){
-                println("Contacto: ${contact.username}")
-            }
-            setUpRecyclerView()
-            adapter.notifyDataSetChanged()
+        viewModel.contacts.observe(viewLifecycleOwner, Observer { contactList ->
+            // Actualiza la lista del adaptador y notifica los cambios
+            adapter.updateContacts(contactList)
         })
 
         UserViewModel.status.observe(viewLifecycleOwner, Observer {
@@ -158,7 +162,7 @@ class lstChatFragment : Fragment(), ContactAdapter.RecyclerViewContactEvents {
 
     private fun setUpRecyclerView() {
         if(!this::adapter.isInitialized){
-            adapter = ContactAdapter(contacts, this)
+            adapter = ContactAdapter(contacts.toMutableList(), this)
             binding.apply {
                 recyclerChat.layoutManager = LinearLayoutManager(requireContext())
                 recyclerChat.setHasFixedSize(true)

@@ -49,4 +49,8 @@
         <item name="colorSurfaceContainerHigh">@color/md_theme_surfaceContainerHigh</item>
         <item name="colorSurfaceContainerHighest">@color/md_theme_surfaceContainerHighest</item>
     </style>
+    <style name="CustomPopupTheme" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:popupBackground">@color/md_theme_secondary</item>
+    </style>
+
 </resources>

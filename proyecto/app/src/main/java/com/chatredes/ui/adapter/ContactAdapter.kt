@@ -10,7 +10,7 @@ import com.chatredes.R
 import com.chatredes.domain.models.Contact
 
 class ContactAdapter(
-    private val dataset : List<Contact>,
+    private val dataset : MutableList<Contact>,
     private val listener: RecyclerViewContactEvents
 ) : RecyclerView.Adapter<ContactAdapter.ViewHolder>(){
 
@@ -22,14 +22,19 @@ class ContactAdapter(
         private val layoutContact: ConstraintLayout = view.findViewById(R.id.contactscard)
         private val tvContact: TextView = view.findViewById(R.id.usernameContact)
         private val tvStatus: TextView = view.findViewById(R.id.disponibilityContact)
+        private val tvStatusMessage: TextView = view.findViewById(R.id.estadoContact)
 
         fun setData(contact: Contact){
-            tvContact.text = contact.username
+            val username = contact.username.split("@")[0]
+            tvContact.text = username
             tvStatus.text = contact.status
+            tvStatusMessage.text = contact.statusMessage
+
             layoutContact.setOnClickListener {
                 listener.onContactClick(contact)
             }
         }
+
 
     }
 
@@ -50,5 +55,11 @@ class ContactAdapter(
 
     override fun getItemCount(): Int {
         return dataset.size
+    }
+
+    fun updateContacts(newContacts: List<Contact>) {
+        dataset.clear()  // Limpiar el dataset
+        dataset.addAll(newContacts)  // Añadir los nuevos contactos
+        notifyDataSetChanged()  // Notificar los cambios al adapter
     }
 }

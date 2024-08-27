@@ -210,8 +210,9 @@ class XMPPClient private constructor(private val server: String) {
 
             roster.entries.forEach { entry ->
                 val presence: Presence = roster.getPresence(entry.jid)
-                val status = presence.status ?: "Unavailable"
-                contacts.add(entry.toContact(status))
+                val status = presence.mode ?: Presence.Mode.chat
+                val statusMsg = presence.status ?: ""
+                contacts.add(entry.toContact(statusMsg,status))
                 Log.d("XMPPClient", "Contact added: $entry")
             }
 

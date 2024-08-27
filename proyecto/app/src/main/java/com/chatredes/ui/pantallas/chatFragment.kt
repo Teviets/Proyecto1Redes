@@ -9,11 +9,13 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.chatredes.databinding.FragmentChatBinding
 import com.chatredes.domain.models.Message
 import com.chatredes.ui.adapter.MessageAdapter
+import com.chatredes.ui.viewmodel.ContactViewModel
 import com.chatredes.ui.viewmodel.MessageViewModel
 import com.chatredes.ui.viewmodel.StatusApp
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,8 +28,8 @@ class chatFragment : Fragment() {
 
     private val args: chatFragmentArgs by navArgs()
     private val ChatViewModel: MessageViewModel by viewModels()
+    private val contactViewModel: ContactViewModel by viewModels()
 
-    private val messages: MutableList<Message> = mutableListOf()
     private lateinit var adapter: MessageAdapter
 
     override fun onCreateView(
@@ -44,9 +46,26 @@ class chatFragment : Fragment() {
 
         setObservers()
         setListener()
+
+        contactViewModel.getContacts()
     }
 
     private fun setObservers() {
+        contactViewModel.contacts.observe(viewLifecycleOwner, Observer {
+            val theContact = it.find { contact -> contact.username == args.JID }
+            binding.contact.text = args.JID
+            if(theContact != null){
+                if (theContact?.statusMessage != ""){
+                    binding.status.text = theContact?.statusMessage
+                }else {
+                    binding.status.text = theContact?.status
+                }
+            }else{
+                binding.status.text = "Desconocido"
+                binding.contact.text = args.JID
+            }
+
+        })
         ChatViewModel.messages.observe(viewLifecycleOwner, Observer { msgList ->
             Log.d("ChatFragment", "Messages observed: ${msgList.size} messages")
             setUpRecyclerView(msgList.filter { msg -> msg.receiver == args.JID || msg.sender == args.JID })
@@ -80,14 +99,16 @@ class chatFragment : Fragment() {
         }
     }
 
-
-
-
     private fun setListener() {
         binding.IBEnviar.setOnClickListener {
             Log.d("ChatFragment", "Sending message: ${binding.ETMensaje.text}")
             ChatViewModel.sendMessage(binding.ETMensaje.text.toString(), args.JID)
             binding.ETMensaje.text!!.clear()
+        }
+        binding.back.setOnClickListener {
+            requireView().findNavController().navigate(
+                chatFragmentDirections.actionChatFragmentToLstChatFragment()
+            )
         }
     }
 }

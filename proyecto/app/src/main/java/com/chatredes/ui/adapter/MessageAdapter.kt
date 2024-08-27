@@ -9,6 +9,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.chatredes.R
 import com.chatredes.domain.models.Message
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MessageAdapter(
     private val dataset: MutableList<Message>
@@ -18,10 +21,14 @@ class MessageAdapter(
         private val layoutMessage: RelativeLayout = view.findViewById(R.id.chat_item)
         private val tvSender: TextView = view.findViewById(R.id.username)
         private val tvMessage: TextView = view.findViewById(R.id.textchat)
+        private val tvTime: TextView = view.findViewById(R.id.message_time)
 
         fun setData(message: Message) {
             tvSender.text = message.sender.toString()
             tvMessage.text = message.message.toString()
+            val dateFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+            val currentTime = dateFormat.format(Date())
+            tvTime.text = currentTime
 
             // Para depuración
             println("DEBUG: Setting data for message: Sender=${message.sender}, Message=${message.message}")
